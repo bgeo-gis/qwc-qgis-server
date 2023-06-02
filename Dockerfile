@@ -1,8 +1,8 @@
 # QGIS Server 3 with Apache FCGI
 
-FROM ubuntu:jammy
+FROM debian:bullseye-slim
 
-ARG QGIS_REPO=ubuntu
+ARG QGIS_REPO=debian-ltr
 
 # Install dependencies:
 # - Locales
@@ -13,17 +13,23 @@ ARG QGIS_REPO=ubuntu
 ENV DEBIAN_FRONTEND=noninteractive
 RUN \
     apt-get update && apt-get upgrade -y && \
-    apt-get install -y locales && \
-    apt-get install -y fontconfig fonts-dejavu ttf-bitstream-vera fonts-liberation fonts-ubuntu && \
+    apt-get install -y locales git && \
+    apt-get install -y fontconfig fonts-dejavu ttf-bitstream-vera fonts-liberation && \
     apt-get install -y apache2 libapache2-mod-fcgid && \
     apt-get install -y curl gpg gettext-base && \
     curl -L https://qgis.org/downloads/qgis-2022.gpg.key | gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/qgis-archive.gpg --import && \
     chmod a+r /etc/apt/trusted.gpg.d/qgis-archive.gpg && \
-    echo "deb https://qgis.org/$QGIS_REPO jammy main" > /etc/apt/sources.list.d/qgis.org.list && \
-    apt-get update && \
-    apt-get install -y qgis-server && \
+    echo "deb https://qgis.org/$QGIS_REPO bullseye main" > /etc/apt/sources.list.d/qgis.org.list && \
+    apt-get update
+
+RUN git clone https://github.com/bgeo-gis/giswater_qgis_set_role_build.git /qgis-build
+WORKDIR /qgis-build/3.28.4
+RUN apt-get install --upgrade --allow-downgrades -y ./*.deb
+
+RUN \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    rm -r /qgis-build
 
 # Add de_DE.UTF-8 and fr_FR.UTF-8 to locales
 RUN locale-gen en_US.UTF-8 de_DE.UTF-8 fr_FR.UTF-8 && update-locale
@@ -89,6 +95,7 @@ ADD qgis3-server.conf.template /etc/apache2/templates/qgis-server.conf.template
 
 # Add entrypoint
 COPY entrypoint.sh /entrypoint.sh
+COPY plugins/ /usr/share/qgis/python/plugins/
 
 EXPOSE 80
 

@@ -1,0 +1,3 @@
+[submodule "plugins/giswater_set_role_plugin"]
+	path = plugins/giswater_set_role_plugin
+	url = https://github.com/bgeo-gis/giswater_set_role_plugin.git
