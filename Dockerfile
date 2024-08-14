@@ -23,7 +23,7 @@ RUN \
     apt-get update
 
 RUN git clone https://github.com/bgeo-gis/giswater_qgis_set_role_build.git /qgis-build
-WORKDIR /qgis-build/3.28.4
+WORKDIR /qgis-build
 RUN apt-get install --upgrade --allow-downgrades -y ./*.deb
 
 RUN \
